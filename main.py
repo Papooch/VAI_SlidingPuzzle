@@ -4,29 +4,36 @@ import pygame as pg
 from puzzle import *
 from solver import *
 
+# global variables because I can't be bothered
+
+def clamp(val, minv, maxv):
+    return max(minv, min(val, maxv))
+
+def reinit(puzzle, solver, dimx, dimy):
+    print(dimx, dimy)
+    puzzle.__init__((dimx, dimy), (300, 300), 5)
 
 def main():
     pg.init()
     pg.display.set_caption('Puzzle')
     screen = pg.display.set_mode((300,300))
-    clock = pg.time.Clock()
-    puzzle = Puzzle((3, 3), (300, 300), 5)
+    dimx = 3
+    dimy = 3
+    puzzle = puzzle = Puzzle((dimx, dimy), (300, 300), 5)
     finalTiles = puzzle.tiles.copy()
-    #solver = PuzzleSolver(puzzle.gridSize, puzzle.tiles, puzzle.tiles)
-    #solver.print()
-    path = []
+    solver = PuzzleSolver(puzzle.gridSize, puzzle.tiles, finalTiles)
 
-    print(puzzle.tiles)
-
+    sequence = []
     while True:
-        dt = clock.tick()/1000
+
+        #dt = clock.tick()/1000
 
         screen.fill((0,0,0))
         puzzle.draw(screen)
         pg.display.flip()
 
-        if path:
-            move = path.pop()
+        if sequence:
+            move = sequence.pop()
             if move == 'U':
                 puzzle.move(pg.K_UP)
             elif move == 'D':
@@ -41,25 +48,34 @@ def main():
             if event.type == pg.QUIT:
                 pg.quit()
                 os._exit(0)
-            if event.type == pg.MOUSEBUTTONDOWN:
-                puzzle.update(pg.mouse.get_pos())
-                print(puzzle.tiles)
-            if event.type == pg.KEYDOWN:
-                if event.key in (pg.K_UP, pg.K_DOWN, pg.K_LEFT, pg.K_RIGHT):
-                    puzzle.move(event.key)
-                if event.key == pg.K_SPACE:
-                    puzzle.random()
-                if event.key == pg.K_RETURN:
-                    solver = PuzzleSolver(puzzle.gridSize, puzzle.tiles, finalTiles)
-                    path = solver.bfs()
-
-
-
-
-            
-
-        
-
+            if not sequence: #react to events only if not moving in a sequence
+                if event.type == pg.MOUSEBUTTONDOWN:
+                    puzzle.update(pg.mouse.get_pos())
+                    print(puzzle.tiles)
+                if event.type == pg.KEYDOWN:
+                    if event.key in (pg.K_UP, pg.K_DOWN, pg.K_LEFT, pg.K_RIGHT):
+                        puzzle.move(event.key)
+                    if event.key == pg.K_SPACE:
+                        puzzle.random()
+                    if event.key == pg.K_RETURN:
+                        solver = PuzzleSolver(puzzle.gridSize, puzzle.tiles, finalTiles)
+                        sequence = solver.bfs()
+                    if event.key == pg.K_KP6:
+                        dimx = clamp(dimx+1, 2, 6)
+                        reinit(puzzle, solver, dimx, dimy)
+                        finalTiles = puzzle.tiles.copy()                       
+                    if event.key == pg.K_KP4:
+                        dimx = clamp(dimx-1, 2, 6)
+                        reinit(puzzle, solver, dimx, dimy)
+                        finalTiles = puzzle.tiles.copy()
+                    if event.key == pg.K_KP2:
+                        dimy = clamp(dimy+1, 2, 6)
+                        reinit(puzzle, solver, dimx, dimy)
+                        finalTiles = puzzle.tiles.copy()
+                    if event.key == pg.K_KP8:
+                        dimy = clamp(dimy-1, 2, 6)
+                        reinit(puzzle, solver, dimx, dimy)
+                        finalTiles = puzzle.tiles.copy()
 
 
 

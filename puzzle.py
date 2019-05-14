@@ -17,7 +17,7 @@ class Puzzle:
       self.font = pg.font.Font(None, int(self.tileSize[1]))
       for i in range(self.noOfTiles):
          image = pg.Surface((self.tileSize[0], self.tileSize[1]))
-         image.fill((0, 0, 200))
+         image.fill((0, 0, 255))
          text = self.font.render(str(i+1), 2, (0, 0, 0))
          w, h = text.get_size()
          image.blit(text, ((self.tileSize[0]-w+tileSpacing)/2, (self.tileSize[1]-h+tileSpacing)/2))
@@ -50,7 +50,7 @@ class Puzzle:
       self.swap(random.choice(adj))
 
 
-   def update(self, mpos, dt=0):
+   def update(self, mpos):
       tile = (mpos[0]//(self.tileSize[0]+self.tileSpacing), mpos[1]//(self.tileSize[1]+self.tileSpacing))
       if tile in self.adjacent():
          self.swap(tile)
