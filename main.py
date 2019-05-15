@@ -14,8 +14,9 @@ def reinit(puzzle, dimx, dimy):
 
 def main():
     pg.init()
-    pg.display.set_caption('Puzzle')
+    pg.display.set_caption('VAI Puzzle')
     screen = pg.display.set_mode((300,300))
+    clock = pg.time.Clock()
     dimx = 3
     dimy = 3
     puzzle = puzzle = Puzzle((dimx, dimy), (300, 300), 5)
@@ -24,14 +25,13 @@ def main():
 
     sequence = []
     while True:
-
-        #dt = clock.tick()/1000
+        dt = clock.tick()/100
 
         screen.fill((0,0,0))
         puzzle.draw(screen)
         pg.display.flip()
 
-        if sequence:
+        if sequence and not puzzle.moving():
             move = sequence.pop()
             if move == 'U':
                 puzzle.move(pg.K_UP)
@@ -41,15 +41,14 @@ def main():
                 puzzle.move(pg.K_LEFT)
             elif move == 'R':
                 puzzle.move(pg.K_RIGHT)
-            time.sleep(.1)
 
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
                 os._exit(0)
-            if not sequence: #react to events only if not moving in a sequence
+            if not sequence and not puzzle.moving(): #react to events only if not moving in a sequence
                 if event.type == pg.MOUSEBUTTONDOWN:
-                    puzzle.update(pg.mouse.get_pos())
+                    puzzle.click(pg.mouse.get_pos())
                     print(puzzle.tiles)
                 if event.type == pg.KEYDOWN:
                     if event.key in (pg.K_UP, pg.K_DOWN, pg.K_LEFT, pg.K_RIGHT):
@@ -59,9 +58,11 @@ def main():
                     if event.key == pg.K_b:
                         solver = PuzzleSolver(puzzle.gridSize, puzzle.tiles, finalTiles)
                         sequence = solver.bfs()
+                        dt = clock.tick()/100
                     if event.key == pg.K_a:
                         solver = PuzzleSolver(puzzle.gridSize, puzzle.tiles, finalTiles)
                         sequence = solver.aStar()
+                        dt = clock.tick()/100
                     if event.key == pg.K_KP6:
                         dimx = clamp(dimx+1, 2, 6)
                         reinit(puzzle, dimx, dimy)
@@ -78,6 +79,7 @@ def main():
                         dimy = clamp(dimy-1, 2, 6)
                         reinit(puzzle, dimx, dimy)
                         finalTiles = puzzle.tiles.copy()
+        puzzle.update(dt)
 
 
 

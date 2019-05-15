@@ -11,7 +11,11 @@ class Puzzle:
       self.tiles = [(x, y) for y in range(gridSize[1]) for x in range(gridSize[0])]
       self.tilescoords = {(x,y):(x*(self.tileSize[0]+tileSpacing)+tileSpacing, y*(self.tileSize[1]+tileSpacing)+tileSpacing)
                            for y in range(gridSize[1]) for x in range(gridSize[0])}
+      self.tilescoordsActual = [(x*(self.tileSize[0]+tileSpacing)+tileSpacing, y*(self.tileSize[1]+tileSpacing)+tileSpacing)
+                                 for y in range(gridSize[1]) for x in range(gridSize[0])]
       self.prevTile = None
+      self.speed = 200
+
       # generate images with numbers
       self.images = []
       self.font = pg.font.Font(None, int(self.tileSize[1]))
@@ -31,7 +35,7 @@ class Puzzle:
 
    def draw(self, screen):
       for i in range(self.noOfTiles):
-         x, y = self.tilescoords[self.tiles[i]]
+         x, y = self.tilescoordsActual[i]
          screen.blit(self.images[i], (x, y))
 
 
@@ -50,10 +54,37 @@ class Puzzle:
       self.swap(random.choice(adj))
 
 
-   def update(self, mpos):
+   def click(self, mpos):
       tile = (mpos[0]//(self.tileSize[0]+self.tileSpacing), mpos[1]//(self.tileSize[1]+self.tileSpacing))
       if tile in self.adjacent():
          self.swap(tile)
+
+
+   def update(self, dt):
+      ds = self.speed*dt
+      for i in range(self.noOfTiles):
+         x, y = self.tilescoordsActual[i]
+         fx, fy = self.tilescoords[self.tiles[i]]
+         dx = fx-x
+         dy = fy-y
+         if dx > self.tileSpacing: x += ds
+         elif dx < -self.tileSpacing: x -= ds
+         else: x = fx
+
+
+         if dy > self.tileSpacing: y += ds
+         elif dy < -self.tileSpacing: y -= ds
+         else: y = fy
+         self.tilescoordsActual[i] = x, y
+
+
+   def moving(self):
+      for i in range(self.noOfTiles):
+         x, y = self.tilescoordsActual[i]
+         fx, fy = self.tilescoords[self.tiles[i]]
+         if x != fx or y != fy:
+            return True
+      return False
 
 
    def swap(self, tile):
