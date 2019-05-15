@@ -57,9 +57,12 @@ def main():
                         puzzle.move(event.key)
                     if event.key == pg.K_SPACE:
                         puzzle.random()
-                    if event.key == pg.K_RETURN:
+                    if event.key == pg.K_b:
                         solver = PuzzleSolver(puzzle.gridSize, puzzle.tiles, finalTiles)
                         sequence = solver.bfs()
+                    if event.key == pg.K_a:
+                        solver = PuzzleSolver(puzzle.gridSize, puzzle.tiles, finalTiles)
+                        sequence = solver.aStar()
                     if event.key == pg.K_KP6:
                         dimx = clamp(dimx+1, 2, 6)
                         reinit(puzzle, solver, dimx, dimy)

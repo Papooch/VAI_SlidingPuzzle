@@ -4,7 +4,7 @@ from collections import deque
 from queue import PriorityQueue
 
 class State:
-   def __init__(self, grid, emptyPosition = None, prev = None, move = None, dist = None, heur = None):
+   def __init__(self, grid, emptyPosition = None, prev = None, move = None, dist = 0, heur = None):
       self.grid = grid
       if emptyPosition == None:
          self.emptyPosition = np.where(grid == 0)
@@ -12,20 +12,20 @@ class State:
          self.emptyPosition = emptyPosition
       self.prev = prev
       self.move = move
-      self.distance = dist
+      self.dist = dist
       self.heuristics = heur
 
    def __lt__(self,other):
-      return (self.heuristics < other.heuristics)
+      return (self.heuristics + self.dist < other.heuristics + other.dist)
 
    def __le__(self,other):
-      return(self.heuristics <= other.heuristics)
+      return(self.heuristics + self.dist <= other.heuristics + other.dist)
 
    def __gt__(self,other):
-      return(self.heuristics > other.heuristics)
+      return(self.heuristics + self.dist > other.heuristics + other.dist)
 
    def __ge__(self,other):
-      return(self.heuristic >= other.heuristics)
+      return(self.heuristic + self.dist >= other.heuristics + other.dist)
 
 
 class PuzzleSolver:
@@ -71,7 +71,7 @@ class PuzzleSolver:
       #y, x = np.where(state.grid == 0)
       y, x = state.emptyPosition # # coords of empty tile #
       directions = [a for a in (("D", (y-1, x)), ("U", (y+1, x)), ("R", (y, x-1)), ("L", (y, x+1))) if self.inGrid(a[1])]
-      return [State(self.swap(state.grid, dir[1], (y, x)), dir[1], state, dir[0]) for dir in directions]
+      return [State(self.swap(state.grid, dir[1], (y, x)), emptyPosition=dir[1], prev=state, move=dir[0], dist=state.dist+1) for dir in directions]
 
 
    def reconstructGrid(self, tiles):
@@ -83,10 +83,12 @@ class PuzzleSolver:
 
 
    def inList(self, state, statelist):
+      idx = 0
       for s in statelist:
          if (state.grid == s.grid).all():
-            return True
-      return False
+            return True, idx
+         idx += 1
+      return False, 0
 
 
    def printGrid(self):
@@ -107,16 +109,46 @@ class PuzzleSolver:
             while(state.prev != None):
                path.append(state.move)
                state = state.prev
-            print("Searched: ", len(self.open), " states.")
+            print("Searched: ", len(self.closed), " states.")
             print("Search took: ", time.time() - then, " seconds.")
             return path
          
          neighbors = self.getNeighbors(state)
          for neighbor in neighbors:
-            if self.inList(neighbor, self.open) or self.inList(neighbor, self.closed):
+            if self.inList(neighbor, self.open)[0] or self.inList(neighbor, self.closed)[0]:
                continue
             self.open.append(neighbor)
 
+   def aStar(self):
+      self.open = PriorityQueue()
+      initstate = State(self.grid, dist = 0)
+      initstate.heuristics = self.computeHeuristics(initstate)
+      self.open.put(initstate)
+      then = time.time()
+
+      while not self.open.empty():
+         state = self.open.get()
+         self.closed.append(state)
+
+         if(state.grid == self.finalState.grid).all():
+            path = []
+            while(state.prev != None):
+               path.append(state.move)
+               state = state.prev
+            print("Searched: ", len(self.closed), " states.")
+            print("Search took: ", time.time() - then, " seconds.")
+            return path
+
+         neighbors = self.getNeighbors(state)
+         for neighbor in neighbors:
+            neighbor.heuristics = self.computeHeuristics(neighbor)
+            inlist, idx = self.inList(neighbor, self.closed)
+            if inlist:
+               if self.closed[idx] > neighbor:
+                  neighbor = self.closed.pop(idx)
+               else:
+                  continue
+            self.open.put(neighbor)
 
 
 
@@ -125,26 +157,20 @@ class PuzzleSolver:
 if __name__ == "__main__":
 
    finaltiles = [(0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2)]
-   tiles = [(0, 0), (1, 0), (0, 1), (1, 1), (1, 2), (0, 2)]
-
-   #tiles = [(1, 2), (0, 2), (0, 1), (0, 0), (1, 0), (1, 1)]
+   #tiles = [(0, 0), (1, 0), (0, 1), (1, 1), (1, 2), (0, 2)]
+   tiles = [(1, 2), (0, 2), (0, 1), (0, 0), (1, 0), (1, 1)]
    #tiles = [(0, 1), (0, 0), (1, 1), (1, 2), (0, 2), (1, 0)]
    #finaltiles = [(0, 0), (1, 0), (1, 1), (0, 1)]
    #tiles = [(1, 0), (1, 1), (0, 1), (0, 0)]
 
-   ### SOLVER TEST
    solver = PuzzleSolver((2, 3), tiles, finaltiles)
 
-   print(solver.computeHeuristics(State(solver.grid)))
-   # neighbors = (solver.getNeighbors(State(solver.grid, solver.emptyPosition(solver.grid))))
+   ### SOLVER TEST
+   path = solver.aStar()
+   #path = solver.bfs()
 
-   # print(solver.grid, "\n")
-
-   # for neighbor in neighbors:
-   #    print(neighbor.grid, "\n")
-   
-   path = solver.bfs()
    print(path)
+
 
    ### PRIORITY QUEUE TEST
    # q = PriorityQueue()
@@ -159,7 +185,6 @@ if __name__ == "__main__":
    # q.put(st3)
    # q.put(st4)
 
-   # del q.queue[1]
 
    # while not q.empty():
    #    next_item = q.get()
