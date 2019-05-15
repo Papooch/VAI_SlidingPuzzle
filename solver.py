@@ -15,6 +15,7 @@ class State:
       self.dist = dist
       self.heuristics = heur
 
+   # lt and gt are deliberately swapped so that PriorityQueue sorts lowest last
    def __lt__(self,other):
       return (self.heuristics + self.dist < other.heuristics + other.dist)
 
@@ -152,23 +153,20 @@ class PuzzleSolver:
 
 
 
-
-
 if __name__ == "__main__":
 
-   finaltiles = [(0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2)]
-   #tiles = [(0, 0), (1, 0), (0, 1), (1, 1), (1, 2), (0, 2)]
    tiles = [(1, 2), (0, 2), (0, 1), (0, 0), (1, 0), (1, 1)]
-   #tiles = [(0, 1), (0, 0), (1, 1), (1, 2), (0, 2), (1, 0)]
-   #finaltiles = [(0, 0), (1, 0), (1, 1), (0, 1)]
-   #tiles = [(1, 0), (1, 1), (0, 1), (0, 0)]
-
+   finaltiles = [(0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2)]
    solver = PuzzleSolver((2, 3), tiles, finaltiles)
 
    ### SOLVER TEST
-   path = solver.aStar()
-   #path = solver.bfs()
+   print("Runnung bfs")
+   path = solver.bfs()
+   print(path,"\n")
 
+   solver = PuzzleSolver((2, 3), tiles, finaltiles)
+   print("Running astar")
+   path = solver.aStar()
    print(path)
 
 

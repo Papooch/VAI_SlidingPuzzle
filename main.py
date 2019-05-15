@@ -9,8 +9,7 @@ from solver import *
 def clamp(val, minv, maxv):
     return max(minv, min(val, maxv))
 
-def reinit(puzzle, solver, dimx, dimy):
-    print(dimx, dimy)
+def reinit(puzzle, dimx, dimy):
     puzzle.__init__((dimx, dimy), (300, 300), 5)
 
 def main():
@@ -65,19 +64,19 @@ def main():
                         sequence = solver.aStar()
                     if event.key == pg.K_KP6:
                         dimx = clamp(dimx+1, 2, 6)
-                        reinit(puzzle, solver, dimx, dimy)
+                        reinit(puzzle, dimx, dimy)
                         finalTiles = puzzle.tiles.copy()                       
                     if event.key == pg.K_KP4:
                         dimx = clamp(dimx-1, 2, 6)
-                        reinit(puzzle, solver, dimx, dimy)
+                        reinit(puzzle, dimx, dimy)
                         finalTiles = puzzle.tiles.copy()
                     if event.key == pg.K_KP2:
                         dimy = clamp(dimy+1, 2, 6)
-                        reinit(puzzle, solver, dimx, dimy)
+                        reinit(puzzle, dimx, dimy)
                         finalTiles = puzzle.tiles.copy()
                     if event.key == pg.K_KP8:
                         dimy = clamp(dimy-1, 2, 6)
-                        reinit(puzzle, solver, dimx, dimy)
+                        reinit(puzzle, dimx, dimy)
                         finalTiles = puzzle.tiles.copy()
 
 
